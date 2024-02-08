@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "vpt_plugin_cellpose2"
-version = "0.0.0"
+version = "1.0.0"
 description = "Cellpose 2 Plugin for VPT"
 license = "Apache-2.0"
 authors = ["Vizgen <techsupport@vizgen.com>"]
