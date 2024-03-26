@@ -29,7 +29,6 @@ pandas = "2.0.3"
 numpy = "1.24.3"
 onnx = ">=1.15.0"
 openvino = ">=2023.2.0"
-torch = "2.0.0"
 vpt_core = ">=1.1.0"
 
 [tool.poetry.group.dev.dependencies]
