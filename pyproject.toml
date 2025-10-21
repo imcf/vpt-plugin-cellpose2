@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "vpt_plugin_cellpose2"
-version = "1.0.0"
+version = "1.0.1"
 description = "Cellpose 2 Plugin for VPT"
 license = "Apache-2.0"
 authors = ["Vizgen <techsupport@vizgen.com>"]
@@ -27,7 +27,7 @@ python = ">=3.9,<3.11"
 cellpose = "2.2.3"
 pandas = "2.0.3"
 numpy = "1.24.3"
-onnx = ">=1.15.0"
+onnx = ">=1.12.0, <1.15.0"
 openvino = ">=2023.2.0"
 vpt_core = ">=1.1.0"
 
