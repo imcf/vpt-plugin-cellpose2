@@ -10,10 +10,16 @@ from vpt_core.io.image import ImageSet
 from vpt_plugin_cellpose2 import CellposeSegParameters, CellposeSegProperties
 
 MINIMUM_IMAGE_SIZE_OPENCV = 513
-warnings.filterwarnings("ignore", message=".*the `scipy.ndimage.filters` namespace is deprecated.*")
+warnings.filterwarnings(
+    "ignore", message=".*the `scipy.ndimage.filters` namespace is deprecated.*"
+)
 
 
-def run(images: ImageSet, properties: CellposeSegProperties, parameters: CellposeSegParameters) -> np.ndarray:
+def run(
+    images: ImageSet,
+    properties: CellposeSegProperties,
+    parameters: CellposeSegParameters,
+) -> np.ndarray:
     """
     Runs Cellpose segmentation on an ImageSet using the specified properties and parameters. Returns a 3D label matrix mask
     the same where zero is background and each label is a segmentation object.
@@ -26,7 +32,9 @@ def run(images: ImageSet, properties: CellposeSegProperties, parameters: Cellpos
     if len(empty_z_levels) == image.shape[0]:
         return np.zeros((image.shape[0],) + image.shape[1:-1])
 
-    mask = extract_masks_with_cellpose(properties, parameters, image, to_segment_z, channels)
+    mask = extract_masks_with_cellpose(
+        properties, parameters, image, to_segment_z, channels
+    )
 
     # Fill in empty z-levels with zeros
     for z in empty_z_levels:
@@ -47,9 +55,13 @@ def extract_masks_with_cellpose(
     mask the same where zero is background and each label is a segmentation object.
     """
     if properties.custom_weights:
-        model = models.CellposeModel(gpu=False, pretrained_model=properties.custom_weights, net_avg=False)
+        model = models.CellposeModel(
+            gpu=True, pretrained_model=properties.custom_weights, net_avg=False
+        )
     else:
-        model = models.CellposeModel(gpu=False, model_type=properties.model, net_avg=False)
+        model = models.CellposeModel(
+            gpu=True, model_type=properties.model, net_avg=False
+        )
 
     model = openvino_utils.to_openvino(model)
 
@@ -101,8 +113,15 @@ def convert_imageset_to_rgb_image(images: ImageSet, channel_map: Dict) -> np.nda
             channel = channel_map[image_color].strip()
             image_data[image_color] = images.as_stack([channel])[..., 0]
             if any(x > 0 for x in image_data[image_color].shape):
-                if any([dim < MINIMUM_IMAGE_SIZE_OPENCV for dim in image_data[image_color].shape[1:]]):
-                    image_data[image_color], x_pad, y_pad = pad_image(image_data[image_color])
+                if any(
+                    [
+                        dim < MINIMUM_IMAGE_SIZE_OPENCV
+                        for dim in image_data[image_color].shape[1:]
+                    ]
+                ):
+                    image_data[image_color], x_pad, y_pad = pad_image(
+                        image_data[image_color]
+                    )
                 image_shape = image_data[image_color].shape
 
     # If any colors were not present in the ImageSet, fill with zeros
@@ -120,13 +139,20 @@ def convert_imageset_to_rgb_image(images: ImageSet, channel_map: Dict) -> np.nda
 
     # Remove the OpenCV compatibility pad if it was added
     if x_pad != 0 or y_pad != 0:
-        image = image[:, 0 : MINIMUM_IMAGE_SIZE_OPENCV - x_pad, 0 : MINIMUM_IMAGE_SIZE_OPENCV - y_pad, :]
+        image = image[
+            :,
+            0 : MINIMUM_IMAGE_SIZE_OPENCV - x_pad,
+            0 : MINIMUM_IMAGE_SIZE_OPENCV - y_pad,
+            :,
+        ]
 
     assert any([dim > 0 for dim in image_shape]), "Image size is (0,0,0)"
     return image
 
 
-def assign_channel_index(channel_map: Dict, parameters: CellposeSegParameters) -> Tuple[List, Dict]:
+def assign_channel_index(
+    channel_map: Dict, parameters: CellposeSegParameters
+) -> Tuple[List, Dict]:
     """
     Map from user input strings specifying the images to use for segmentation (which may be colors like "green" or image
     channels like "DAPI") to the index value of that channel in the np.ndarray input to cellpose
@@ -145,7 +171,10 @@ def assign_channel_index(channel_map: Dict, parameters: CellposeSegParameters) -
     index_map_color["all"] = "grayscale"
 
     channels = []
-    for user_channel in [parameters.entity_fill_channel.lower(), parameters.nuclear_channel.lower()]:
+    for user_channel in [
+        parameters.entity_fill_channel.lower(),
+        parameters.nuclear_channel.lower(),
+    ]:
         if user_channel in index_map_color.keys():
             channels.append(index_map[index_map_color.get(user_channel)])
         elif user_channel in index_map_color.values():
@@ -161,5 +190,10 @@ def pad_image(image_array: np.ndarray) -> Tuple[np.ndarray, int, int]:
     """
     x_pad = MINIMUM_IMAGE_SIZE_OPENCV - image_array.shape[1]
     y_pad = MINIMUM_IMAGE_SIZE_OPENCV - image_array.shape[2]
-    image_array = np.pad(image_array, [(0, 0), (0, x_pad), (0, y_pad)], mode="constant", constant_values=0)
+    image_array = np.pad(
+        image_array,
+        [(0, 0), (0, x_pad), (0, y_pad)],
+        mode="constant",
+        constant_values=0,
+    )
     return image_array, x_pad, y_pad
