@@ -8,6 +8,7 @@ class CellposeSegProperties:
     channel_map: dict
     model: Optional[str] = None
     custom_weights: Optional[str] = None
+    use_gpu: bool = True
 
 
 @dataclass(frozen=True)
@@ -18,3 +19,4 @@ class CellposeSegParameters:
     flow_threshold: float
     cellprob_threshold: float
     minimum_mask_size: int
+    use_gpu: bool = True

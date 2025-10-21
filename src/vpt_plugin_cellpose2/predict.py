@@ -56,14 +56,17 @@ def extract_masks_with_cellpose(
     """
     if properties.custom_weights:
         model = models.CellposeModel(
-            gpu=True, pretrained_model=properties.custom_weights, net_avg=False
+            gpu=properties.use_gpu,
+            pretrained_model=properties.custom_weights,
+            net_avg=False,
         )
     else:
         model = models.CellposeModel(
-            gpu=True, model_type=properties.model, net_avg=False
+            gpu=properties.use_gpu, model_type=properties.model, net_avg=False
         )
 
-    model = openvino_utils.to_openvino(model)
+    if not properties.use_gpu:
+        model = openvino_utils.to_openvino(model)
 
     mask = model.eval(
         image[to_segment_z, ...],
