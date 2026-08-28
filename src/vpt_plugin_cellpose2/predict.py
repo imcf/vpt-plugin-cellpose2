@@ -4,7 +4,6 @@ from typing import Dict, List, Set, Tuple
 import cv2
 import numpy as np
 from cellpose import models
-from cellpose.contrib import openvino_utils
 from vpt_core.io.image import ImageSet
 
 from vpt_plugin_cellpose2 import CellposeSegParameters, CellposeSegProperties
@@ -66,6 +65,10 @@ def extract_masks_with_cellpose(
         )
 
     if not properties.use_gpu:
+        # move import down here to avoid import errors when gpu is used
+        # openvino was changed in 2026 to remove the `openvino.runtime` module, which cellpose 2.2.3 imports
+        from cellpose.contrib import openvino_utils
+
         model = openvino_utils.to_openvino(model)
 
     mask = model.eval(
